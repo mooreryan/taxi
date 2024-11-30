@@ -1,6 +1,6 @@
 # Taxi
 
-✨ Sparkling tools for dealing with NCBI Taxonomy ✨
+✨ Sparkling tools for dealing with the NCBI Taxonomy ✨
 
 ## Installation
 

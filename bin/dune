@@ -1,0 +1,6 @@
+(executables
+ (public_names taxi)
+ (names taxi)
+ (libraries taxi_lib cmdliner core)
+ (instrumentation
+  (backend bisect_ppx)))

@@ -1,0 +1,15 @@
+(library
+ (name taxi_lib)
+ (libraries
+  cmdliner
+  core
+  core_unix.time_unix
+  fmt.tty
+  logs
+  logs.cli
+  logs.fmt
+  re)
+ (preprocess
+  (pps ppx_jane))
+ (instrumentation
+  (backend bisect_ppx)))

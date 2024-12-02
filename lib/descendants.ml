@@ -3,7 +3,7 @@ open! Core
 (* This is significantly faster than using [Re.split].
 
    (It is checked against [Re.split] in the property tests.) *)
-let split_fields : string -> child_id:string ref -> id:string ref -> unit =
+let split_fields : string -> child_id:int ref -> id:int ref -> unit =
  fun s ~child_id ~id ->
   let len = String.length s in
   let rec loop i l field_count =
@@ -27,7 +27,7 @@ let split_fields : string -> child_id:string ref -> id:string ref -> unit =
             Char.equal s.[i + 1] '|' && Char.equal s.[i + 2] '\t'
           then (
             (* We are in a delimiter! *)
-            let field = String.sub s ~pos:l ~len:(i - l) in
+            let field = String.sub s ~pos:l ~len:(i - l) |> Int.of_string in
             if field_count = 0 then child_id := field
             else if field_count = 1 then id := field
             else assert false ;
@@ -43,11 +43,11 @@ let split_fields : string -> child_id:string ref -> id:string ref -> unit =
 
 (** [read_nodes_dmp file_name] reads the nodes.dmp file into a Hashtbl of -> ID
     to children IDs. *)
-let read_nodes_dmp : string -> (string, string list) Hashtbl.t =
+let read_nodes_dmp : string -> (int, int list) Hashtbl.t =
  fun nodes_dmp ->
-  let child_id = ref "" in
-  let id = ref "" in
-  let children_of = Hashtbl.create (module String) in
+  let child_id = ref (-1) in
+  let id = ref (-1) in
+  let children_of = Hashtbl.create (module Int) in
   In_channel.with_file nodes_dmp ~f:(fun ic ->
       In_channel.iter_lines ic ~f:(fun line ->
           split_fields line ~child_id ~id ;
@@ -60,12 +60,12 @@ let read_nodes_dmp : string -> (string, string list) Hashtbl.t =
 
 (** [read_query_ids] reads the query ID file into a list of query IDs. Assumes
     that there is a single ID per line. *)
-let read_query_ids : string -> string list =
- fun ids -> In_channel.read_lines ids
+let read_query_ids : string -> int list =
+ fun ids -> In_channel.read_lines ids |> List.map ~f:Int.of_string
 
 (** [descendants children_of id] gets all the descendants of [id], given the
     parent-child relationships defined in [children_of]. *)
-let descendants : (string, string list) Hashtbl.t -> string -> unit =
+let descendants : (int, int list) Hashtbl.t -> int -> unit =
  fun children_of start_id ->
   let ids = Stack.of_list [start_id] in
   let rec loop () =
@@ -79,12 +79,12 @@ let descendants : (string, string list) Hashtbl.t -> string -> unit =
       | Some children ->
           List.iter children ~f:(fun child ->
               Stack.push ids child ;
-              print_endline [%string "%{start_id}\t%{id}\t%{child}"] ) ;
+              print_endline [%string "%{start_id#Int}\t%{id#Int}\t%{child#Int}"] ) ;
           loop () )
   in
   loop ()
 
-let descendants' : (string, string list) Hashtbl.t -> string list -> unit =
+let descendants' : (int, int list) Hashtbl.t -> int list -> unit =
  fun children_of start_ids -> List.iter start_ids ~f:(descendants children_of)
 
 let run : Opts.Descendants_opts.t -> unit =

@@ -1,0 +1,5 @@
+(executables
+ (enabled_if
+  (= %{profile} dev))
+ (names bench_split_dmp)
+ (libraries core core_bench core_unix.command_unix taxi_lib test_taxi_lib))

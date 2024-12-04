@@ -40,7 +40,17 @@ module Descendants_opts = struct
   [@@deriving sexp_of]
 end
 
-type t = Descendants_opts of Descendants_opts.t [@@deriving sexp_of]
+module Sample_opts = struct
+  type t =
+    { nodes_dmp: string
+    ; rank: string
+    ; sample_size: int
+    ; log_level: Logs.level option }
+  [@@deriving sexp_of]
+end
+
+type t = Descendants_opts of Descendants_opts.t | Sample_opts of Sample_opts.t
+[@@deriving sexp_of]
 
 let verbose = Logs_cli.level ()
 
@@ -96,7 +106,32 @@ let descendants =
   in
   Cmd.v info term
 
-let subcommands = [descendants]
+let sample =
+  let info =
+    let doc = "todo" in
+    let man = [] @ common_docs_sections in
+    Cmd.info "sample" ~version:Version.version ~doc ~man ~exits:[]
+  in
+  let term =
+    Term.Syntax.(
+      let+ nodes_dmp =
+        let doc = "Path to NCBI Taxonomy nodes.dmp file" in
+        Arg.(
+          required
+          & pos 0 (some non_dir_file) None
+          & info [] ~docv:"NODES_DMP" ~doc )
+      and+ rank =
+        let doc = "Which rank should I sample? (E.g., genus, species, etc.)" in
+        Arg.(required & pos 1 (some string) None & info [] ~docv:"RANK" ~doc)
+      and+ sample_size =
+        let doc = "Sample size" in
+        Arg.(required & pos 2 (some int) None & info [] ~docv:"SIZE" ~doc)
+      and+ log_level = verbose in
+      Sample_opts {nodes_dmp; rank; sample_size; log_level} )
+  in
+  Cmd.v info term
+
+let subcommands = [descendants; sample]
 
 let cmd_group =
   let info =

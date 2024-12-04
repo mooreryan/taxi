@@ -4,7 +4,7 @@
 
 (name taxi)
 
-(version 2024.0.1)
+(version 2024.1.0-SNAPSHOT)
 
 (maintainers "Ryan M. Moore")
 

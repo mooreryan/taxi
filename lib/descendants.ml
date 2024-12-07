@@ -51,11 +51,12 @@ let read_nodes_dmp : string -> (int, int list) Hashtbl.t =
   In_channel.with_file nodes_dmp ~f:(fun ic ->
       In_channel.iter_lines ic ~f:(fun line ->
           split_fields line ~child_id ~id ;
-          Hashtbl.update children_of !id ~f:(function
-            | None ->
-                [!child_id]
-            | Some children ->
-                !child_id :: children ) ) ) ;
+          (* Add the parent and child. *)
+          Hashtbl.add_multi children_of ~key:!id ~data:!child_id ;
+          (* Also ensure that the child_id is included in the graph. I.e., we
+             want any terminal nodes to also be included in the output. *)
+          Hashtbl.add children_of ~key:!child_id ~data:[] |> ignore ;
+          () ) ) ;
   children_of
 
 (** [read_query_ids] reads the query ID file into a list of query IDs. Assumes
@@ -75,6 +76,10 @@ let descendants : (int, int list) Hashtbl.t -> int -> unit =
     | Some id -> (
       match Hashtbl.find children_of id with
       | None ->
+          loop ()
+      | Some [] ->
+          (* Empty array means it's a terminal node. *)
+          print_endline [%string "%{start_id#Int}\t%{id#Int}\tNA"] ;
           loop ()
       | Some children ->
           List.iter children ~f:(fun child ->

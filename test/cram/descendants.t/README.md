@@ -3,7 +3,7 @@
 To create the smaller nodes.dmp file for the test:
 
 - First, run both the OCaml and the C++ program with the given IDs on the full nodes.dmp file.
-  - Ensure those match.
+  - Ensure those match (e.g., `diff <(cut -f2 ocaml_output.tsv | sort | uniq) <(cat test/cram/descendants.t/reference_output.txt | sort | uniq)`)
 - Then use `grep` to pull out any lines in the nodes.dmp file that contain those IDs.
   - E.g., `grep -w -f expected_ids.txt nodes.dmp > nodes_sample.dmp`
 - Then add in some random lines from the original file.

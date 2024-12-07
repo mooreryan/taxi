@@ -78,6 +78,15 @@ let descendants =
           "$(b,Field 3):  The ID is the child (direct descendant) of the \
            parent ID given in field 2.  It is also a descendant of the \
            starting ID given in field 1."
+      ; `P
+          "$(i,Note!)  If a tax ID that represents a terminal node in the \
+           taxonomy graph (i.e., a node with no children) is included in the \
+           input file, then it will also be included in the program output.  \
+           Field 1 and 2 will be the given ID and field 3 will be NA."
+      ; `P
+          "$(i,Note!)  If a tax ID that is $(b,not) present in the nodes.dmp \
+           file is included in the input file, then that tax ID will be \
+           skipped and will $(b,not) be present in the program output."
       ; `S Manpage.s_examples
       ; `P "=== CLI Usage"
       ; `Pre

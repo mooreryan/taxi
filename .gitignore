@@ -2,3 +2,5 @@
 /.vscode
 /*perf*
 /justfile
+/*.sh
+/callgrind*

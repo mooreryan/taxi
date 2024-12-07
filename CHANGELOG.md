@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Added `filter` program
+- Added `sample` program
+
+### Changed
+
+- Included terminal nodes in the output of the `descendants` program (their child is labeled as `NA`)
+
 ## [2024.0.1] - 2024-12-02
 
 ### Changed

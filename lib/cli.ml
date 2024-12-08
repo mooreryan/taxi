@@ -36,7 +36,11 @@ end = struct
 end
 
 module Descendants_opts = struct
-  type t = {nodes_dmp: string; ids: string; log_level: Logs.level option}
+  type t =
+    { nodes_dmp: string
+    ; ids: string
+    ; full_output: bool
+    ; log_level: Logs.level option }
   [@@deriving sexp_of]
 end
 
@@ -63,32 +67,54 @@ let descendants =
           "Given the NCBI nodes.dmp file and a file with one ID per line, \
            return all the descendants of all IDs in the IDs file."
       ; `P
-          "The output will have $(i,three tab-separated fields) per line: 1.) \
-           starting ID, 2.) parent ID, and 3.) ID."
+          "There are two variations on the output that can be selected: basic \
+           output (default) and full output."
+      ; `P
+          "$(i,Note!)  If a tax ID that is $(b,not) present in the nodes.dmp \
+           file is included in the input file, then that tax ID will be \
+           skipped and will $(b,not) be present in the program output."
+      ; `P "==== Basic Output ==== "
+      ; `P "This is the default output."
+      ; `P
+          "The output will have $(i,two tab-separated fields) per line: 1.) \
+           starting ID, and 2.) ID."
       ; `P
           "$(b,Field 1):  The starting ID corresponds to one of the IDs in the \
            input ID file.  All lines in the output that start with a given ID \
            descend from that ID in the taxonomy graph specified by the \
            nodes.dmp file."
       ; `P
-          "$(b,Field 2):  The parent ID is the (direct) parent of the ID given \
-           in field 3.  It is a descendant of the starting ID given in field \
-           1."
+          "$(b,Field 2):  The ID is a descendant if the starting ID.  The node \
+           represented by this ID need not be a direct descendant of the \
+           starting ID."
+      ; `P "==== Full Output ==== "
       ; `P
-          "$(b,Field 3):  The ID is the child (direct descendant) of the \
-           parent ID given in field 2.  It is also a descendant of the \
-           starting ID given in field 1."
+          "The output will have $(i,three tab-separated fields) per line: 1.) \
+           starting ID, 2.) ID, and 3.) child ID."
+      ; `P
+          "$(b,Field 1):  The starting ID corresponds to one of the IDs in the \
+           input ID file.  All lines in the output that start with a given ID \
+           descend from that ID in the taxonomy graph specified by the \
+           nodes.dmp file."
+      ; `P
+          "$(b,Field 2):  The ID is a descendant if the starting ID and \
+           (direct) parent of the child ID given in field 3.  The node \
+           represented by this ID need not be a direct descendant of the \
+           starting ID."
+      ; `P
+          "$(b,Field 3):  The child ID is the child (direct descendant) of the \
+           ID given in field 2.  It is also a descendant of the starting ID \
+           given in field 1."
+      ; `P
+          "The 2nd and 3rd fields could be used as input to a graph viewer \
+           such as Cytoscape."
       ; `P
           "$(i,Note!)  If a tax ID that represents a terminal node in the \
            taxonomy graph (i.e., a node with no children) is included in the \
            input file, then it will also be included in the program output.  \
            Field 1 and 2 will be the given ID and field 3 will be NA."
-      ; `P
-          "$(i,Note!)  If a tax ID that is $(b,not) present in the nodes.dmp \
-           file is included in the input file, then that tax ID will be \
-           skipped and will $(b,not) be present in the program output."
       ; `S Manpage.s_examples
-      ; `P "=== CLI Usage"
+      ; `P "==== CLI Usage ===="
       ; `Pre
           "\\$ taxi descendants /path/to/nodes.dmp /path/to/ids.txt > \
            descendants.tsv" ]
@@ -110,8 +136,11 @@ let descendants =
           required
           & pos 1 (some non_dir_file) None
           & info [] ~docv:"ID_FILE" ~doc )
+      and+ full_output =
+        let doc = "Output the full 3-column graph" in
+        Arg.(value & flag & info ["f"; "full-output"] ~docv:"FULL_OUTPUT" ~doc)
       and+ log_level = verbose in
-      Descendants_opts {nodes_dmp; ids; log_level} )
+      Descendants_opts {nodes_dmp; ids; full_output; log_level} )
   in
   Cmd.v info term
 

@@ -100,8 +100,7 @@ let%expect_test "split_fields tabs at end of second field" =
   let id = ref (-1) in
   let result = Or_error.try_with (fun () -> split_fields s ~child_id ~id) in
   result |> [%sexp_of: unit Or_error.t] |> print_s ;
-  [%expect
-    {| (Error (Failure "Int.of_string: \"ap\\tple\"")) |}]
+  [%expect {| (Error (Failure "Int.of_string: \"ap\\tple\"")) |}]
 
 let%expect_test "split_fields tabs near end of second field" =
   let s = "ap\tple\t|\tp\ti\t\te\t|\t" in
@@ -111,28 +110,66 @@ let%expect_test "split_fields tabs near end of second field" =
   |> [%sexp_of: unit Or_error.t] |> print_s ;
   [%expect {| (Error (Failure "Int.of_string: \"ap\\tple\"")) |}]
 
-let%expect_test _ =
+let%expect_test "write_descendants_*" =
   let children_of =
     Hashtbl.of_alist_exn
       (module Int)
-      [(1, [2; 3; 4]); (2, [5; 6]); (4, [7]); (6, [8; 9])]
+      [ (1, [2; 3; 4])
+      ; (2, [5; 6])
+      ; (3, [])
+      ; (4, [7])
+      ; (5, [])
+      ; (6, [8; 9])
+      ; (7, [])
+      ; (8, [])
+      ; (9, []) ]
   in
-  descendants children_of 1 ;
+  write_descendants_full_output children_of 1 ;
   [%expect
     {|
     1	1	2
     1	1	3
     1	1	4
     1	4	7
+    1	7	NA
+    1	3	NA
     1	2	5
     1	2	6
     1	6	8
     1	6	9
+    1	9	NA
+    1	8	NA
+    1	5	NA
     |}] ;
-  descendants children_of 2 ;
-  [%expect {|
+  write_descendants_basic_output children_of 1 ;
+  [%expect
+    {|
+    1	1
+    1	4
+    1	7
+    1	3
+    1	2
+    1	6
+    1	9
+    1	8
+    1	5
+    |}] ;
+  write_descendants_full_output children_of 2 ;
+  [%expect
+    {|
     2	2	5
     2	2	6
     2	6	8
     2	6	9
-    |}]
+    2	9	NA
+    2	8	NA
+    2	5	NA
+    |}] ;
+  write_descendants_basic_output children_of 2 ;
+  [%expect {|
+      2	2
+      2	6
+      2	9
+      2	8
+      2	5
+      |}]

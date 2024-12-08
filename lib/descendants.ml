@@ -64,14 +64,40 @@ let read_nodes_dmp : string -> (int, int list) Hashtbl.t =
 let read_query_ids : string -> int list =
  fun ids -> In_channel.read_lines ids |> List.map ~f:Int.of_string
 
-(** [descendants children_of id] gets all the descendants of [id], given the
-    parent-child relationships defined in [children_of]. *)
-let descendants : (int, int list) Hashtbl.t -> int -> unit =
+let write_descendants_basic_output : (int, int list) Hashtbl.t -> int -> unit =
  fun children_of start_id ->
   let ids = Stack.of_list [start_id] in
   let rec loop () =
     match Stack.pop ids with
     | None ->
+        ()
+    | Some id -> (
+      match Hashtbl.find children_of id with
+      | None ->
+          (* None here doesn't mean no children, it means the ID was not found.
+             This can happen if the [start_id] is not present in the graph. *)
+          loop ()
+      | Some [] ->
+          (* Empty array means it's a terminal node. *)
+          print_endline [%string "%{start_id#Int}\t%{id#Int}"] ;
+          loop ()
+      | Some children ->
+          print_endline [%string "%{start_id#Int}\t%{id#Int}"] ;
+          List.iter children ~f:(fun child -> Stack.push ids child) ;
+          loop () )
+  in
+  loop ()
+
+(** [descendants children_of id] writes all the descendants of [id], given the
+    parent-child relationships defined in [children_of]. *)
+let write_descendants_full_output : (int, int list) Hashtbl.t -> int -> unit =
+ fun children_of start_id ->
+  let ids = Stack.of_list [start_id] in
+  let rec loop () =
+    match Stack.pop ids with
+    | None ->
+        (* None here doesn't mean no children, it means the ID was not found.
+           This can happen if the [start_id] is not present in the graph. *)
         ()
     | Some id -> (
       match Hashtbl.find children_of id with
@@ -89,8 +115,15 @@ let descendants : (int, int list) Hashtbl.t -> int -> unit =
   in
   loop ()
 
-let descendants' : (int, int list) Hashtbl.t -> int list -> unit =
- fun children_of start_ids -> List.iter start_ids ~f:(descendants children_of)
+let write_descendants_basic_output' :
+    (int, int list) Hashtbl.t -> int list -> unit =
+ fun children_of start_ids ->
+  List.iter start_ids ~f:(write_descendants_basic_output children_of)
+
+let write_descendants_full_output' :
+    (int, int list) Hashtbl.t -> int list -> unit =
+ fun children_of start_ids ->
+  List.iter start_ids ~f:(write_descendants_full_output children_of)
 
 let run : Cli.Descendants_opts.t -> unit =
  fun opts ->
@@ -101,7 +134,8 @@ let run : Cli.Descendants_opts.t -> unit =
   let children_of = read_nodes_dmp opts.nodes_dmp in
   Logs.info (fun m -> m "reading query ids") ;
   let ids = read_query_ids opts.ids in
-  Logs.info (fun m -> m "getting descendants") ;
-  descendants' children_of ids ;
+  Logs.info (fun m -> m "writing descendants") ;
+  if opts.full_output then write_descendants_full_output' children_of ids
+  else write_descendants_basic_output' children_of ids ;
   Logs.info (fun m -> m "done") ;
   ()

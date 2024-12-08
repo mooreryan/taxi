@@ -1,0 +1,6 @@
+2	|	1	|	genus	|	x	|	x	|	0	|	x	|	0	|	x	|	0	|	0	|	0	|	not kingdom	|
+3	|	1	|	genus	|	x	|	x	|	0	|	x	|	0	|	x	|	0	|	0	|	0	|	not species	|
+4	|	2	|	species	|	x	|	x	|	0	|	x	|	0	|	x	|	0	|	0	|	0	|	x	|
+5	|	2	|	species	|	x	|	x	|	0	|	x	|	0	|	x	|	0	|	0	|	0	|	x	|
+6	|	3	|	species	|	x	|	x	|	0	|	x	|	0	|	x	|	0	|	0	|	0	|	not genus	|
+1	|	0	|	kingdom	|	x	|	x	|	0	|	x	|	0	|	x	|	0	|	0	|	0	|	not species	|

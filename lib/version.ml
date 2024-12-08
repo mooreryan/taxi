@@ -1,3 +1,3 @@
 open! Core
 
-let version = "2024.1.0-SNAPSHOT"
+let version = "2024.1.0"

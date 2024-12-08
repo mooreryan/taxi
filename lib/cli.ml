@@ -1,6 +1,17 @@
 open! Core
 open Cmdliner
 
+let positive_or_zero_int =
+  let parser arg =
+    Arg.parser_of_kind_of_string ~kind:"a number >= 0"
+      (fun arg ->
+        let%bind.Option number = Int.of_string_opt arg in
+        if number >= 0 then Some number else None )
+      arg
+  in
+  let printer = Format.pp_print_int in
+  Arg.conv (parser, printer)
+
 let common_docs_sections =
   [ `S Manpage.s_bugs
   ; `P
@@ -44,6 +55,15 @@ module Descendants_opts = struct
   [@@deriving sexp_of]
 end
 
+module Filter_opts = struct
+  type t =
+    { nodes_dmp: string
+    ; patterns: string
+    ; column: int
+    ; log_level: Logs.level option }
+  [@@deriving sexp_of]
+end
+
 module Sample_opts = struct
   type t =
     { nodes_dmp: string
@@ -53,7 +73,10 @@ module Sample_opts = struct
   [@@deriving sexp_of]
 end
 
-type t = Descendants_opts of Descendants_opts.t | Sample_opts of Sample_opts.t
+type t =
+  | Descendants_opts of Descendants_opts.t
+  | Filter_opts of Filter_opts.t
+  | Sample_opts of Sample_opts.t
 [@@deriving sexp_of]
 
 let verbose = Logs_cli.level ()
@@ -141,6 +164,39 @@ let descendants =
         Arg.(value & flag & info ["f"; "full-output"] ~docv:"FULL_OUTPUT" ~doc)
       and+ log_level = verbose in
       Descendants_opts {nodes_dmp; ids; full_output; log_level} )
+  in
+  Cmd.v info term
+
+let filter =
+  let info =
+    let doc = "TODO" in
+    let man = [] @ common_docs_sections in
+    Cmd.info "filter" ~version:Version.version ~doc ~man ~exits:[]
+  in
+  let term =
+    Term.Syntax.(
+      let+ nodes_dmp =
+        let doc = "Path to NCBI Taxonomy nodes.dmp file" in
+        Arg.(
+          required
+          & pos 0 (some non_dir_file) None
+          & info [] ~docv:"NODES_DMP" ~doc )
+      and+ patterns =
+        let doc = "Path to patterns file" in
+        Arg.(
+          required
+          & pos 1 (some non_dir_file) None
+          & info [] ~docv:"PATTERNS" ~doc )
+      and+ column =
+        let doc =
+          "1-based index of column to check patterns against.  Use 0 for full \
+           line search -- but better to use grep in that case :)"
+        in
+        Arg.(
+          value & opt positive_or_zero_int 0
+          & info ["c"; "column"] ~docv:"COLUMN" ~doc )
+      and+ log_level = verbose in
+      Filter_opts {nodes_dmp; patterns; column; log_level} )
   in
   Cmd.v info term
 

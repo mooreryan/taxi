@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Set two-column basic output as default for descendants program.
-- Add a flag (`--full-output`) to toggle the full three-column output. (This was the defualt previously.)
+- Add a flag (`--full-output`) to toggle the full three-column output. (This was the default previously.)
 - Included terminal nodes in the full output of the `descendants` program (their child is labeled as `NA`)
 
 ## [2024.0.1] - 2024-12-02

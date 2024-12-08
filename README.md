@@ -25,7 +25,7 @@ $ taxi descendants --help
 ## Subcommands
 
 - `descendants` -- get descendants of a set of taxonomy IDs
-- `filter` -- filter rows based on a file of patterns
+- `filter` -- filter rows based on patterns
 - `sample` -- sample taxonomy IDs at a given taxonomic rank
 
 ## License

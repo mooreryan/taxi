@@ -139,9 +139,7 @@ let descendants =
            Field 1 and 2 will be the given ID and field 3 will be NA."
       ; `S Manpage.s_examples
       ; `P "==== CLI Usage ===="
-      ; `Pre
-          "\\$ taxi descendants /path/to/nodes.dmp /path/to/ids.txt > \
-           descendants.tsv" ]
+      ; `Pre "\\$ taxi descendants nodes.dmp ids.txt > descendants.tsv" ]
       @ common_docs_sections
     in
     Cmd.info "descendants" ~version:Version.version ~doc ~man ~exits:[]

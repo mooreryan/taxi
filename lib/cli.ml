@@ -59,7 +59,8 @@ end
 module Filter_opts = struct
   type t =
     { nodes_dmp: string
-    ; patterns: string
+    ; patterns: string list
+    ; patterns_file: string option
     ; column: int
     ; log_level: Logs.level option }
   [@@deriving sexp_of]
@@ -175,7 +176,18 @@ let filter =
           "Given a set of patterns and a column in which to search, return all \
            records in the nodes.dmp file that have an exact match in the given \
            column to one of the given patterns."
-      ; `P "The patterns file should have one pattern per line." ]
+      ; `P
+          "Patterns may be specified as positional arguments, in a file, or a \
+           mix of both."
+      ; `P "The patterns file should have one pattern per line."
+      ; `S Manpage.s_examples
+      ; `P "==== CLI Usage ===="
+      ; `P
+          "You can mix patterns specified as positional arguments with those \
+           specified in a file."
+      ; `Pre
+          "\\$ taxi filter nodes.dmp species --file=other_ranks.txt > \
+           filtered_nodes.dmp" ]
       @ common_docs_sections
     in
     Cmd.info "filter" ~version:Version.version ~doc ~man ~exits:[]
@@ -190,10 +202,13 @@ let filter =
           & info [] ~docv:"NODES_DMP" ~doc )
       and+ patterns =
         let doc = "Path to patterns file" in
+        Arg.(value & pos_right 0 string [] & info [] ~docv:"PATTERNS" ~doc)
+      and+ patterns_file =
+        let doc = "Path to patterns file" in
         Arg.(
-          required
-          & pos 1 (some non_dir_file) None
-          & info [] ~docv:"PATTERNS" ~doc )
+          value
+          & opt (some non_dir_file) None
+          & info ["f"; "file"] ~docv:"PATTERNS_FILE" ~doc )
       and+ column =
         let doc = "1-based index of column to check patterns against." in
         Arg.(
@@ -201,7 +216,7 @@ let filter =
           & opt (int_range_inclusive ~low:1 ~high:13) 3
           & info ["c"; "column"] ~docv:"COLUMN" ~doc )
       and+ log_level = verbose in
-      Filter_opts {nodes_dmp; patterns; column; log_level} )
+      Filter_opts {nodes_dmp; patterns; patterns_file; column; log_level} )
   in
   Cmd.v info term
 

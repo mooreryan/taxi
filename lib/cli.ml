@@ -1,12 +1,13 @@
 open! Core
 open Cmdliner
 
-let positive_or_zero_int =
+let int_range_inclusive ~low ~high =
   let parser arg =
-    Arg.parser_of_kind_of_string ~kind:"a number >= 0"
+    Arg.parser_of_kind_of_string
+      ~kind:[%string "an int N such that %{low#Int} <= N <= %{high#Int}"]
       (fun arg ->
         let%bind.Option number = Int.of_string_opt arg in
-        if number >= 0 then Some number else None )
+        if low <= number && number <= high then Some number else None )
       arg
   in
   let printer = Format.pp_print_int in
@@ -169,8 +170,16 @@ let descendants =
 
 let filter =
   let info =
-    let doc = "TODO" in
-    let man = [] @ common_docs_sections in
+    let doc = "filter nodes.dmp file by field" in
+    let man =
+      [ `S Manpage.s_description
+      ; `P
+          "Given a set of patterns and a column in which to search, return all \
+           records in the nodes.dmp file that have an exact match in the given \
+           column to one of the given patterns."
+      ; `P "The patterns file should have one pattern per line." ]
+      @ common_docs_sections
+    in
     Cmd.info "filter" ~version:Version.version ~doc ~man ~exits:[]
   in
   let term =
@@ -188,12 +197,10 @@ let filter =
           & pos 1 (some non_dir_file) None
           & info [] ~docv:"PATTERNS" ~doc )
       and+ column =
-        let doc =
-          "1-based index of column to check patterns against.  Use 0 for full \
-           line search -- but better to use grep in that case :)"
-        in
+        let doc = "1-based index of column to check patterns against." in
         Arg.(
-          value & opt positive_or_zero_int 0
+          value
+          & opt (int_range_inclusive ~low:1 ~high:13) 3
           & info ["c"; "column"] ~docv:"COLUMN" ~doc )
       and+ log_level = verbose in
       Filter_opts {nodes_dmp; patterns; column; log_level} )
@@ -225,7 +232,7 @@ let sample =
   in
   Cmd.v info term
 
-let subcommands = [descendants; sample]
+let subcommands = [descendants; filter; sample]
 
 let cmd_group =
   let info =

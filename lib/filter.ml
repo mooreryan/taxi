@@ -9,8 +9,7 @@ let read_patterns patterns_file =
 let filter :
     nodes_dmp:string -> patterns:string Hash_set.t -> column:int -> unit =
  fun ~nodes_dmp ~patterns ~column ->
-  (* TODO: column count *)
-  if column >= 14 then failwith "TODO" ;
+  if column > 13 then failwith "there are only 13 columns in the index file!" ;
   (* column is 1-based *)
   let fields = Array.create ~len:column "" in
   let i = column - 1 in

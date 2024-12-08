@@ -92,11 +92,11 @@ let descendants : (int, int list) Hashtbl.t -> int -> unit =
 let descendants' : (int, int list) Hashtbl.t -> int list -> unit =
  fun children_of start_ids -> List.iter start_ids ~f:(descendants children_of)
 
-let run : Opts.Descendants_opts.t -> unit =
+let run : Cli.Descendants_opts.t -> unit =
  fun opts ->
   Logging.set_up_logging opts.log_level ;
   Logs.debug (fun m ->
-      m "%a" Sexp.pp_mach ([%sexp_of: Opts.Descendants_opts.t] opts) ) ;
+      m "%a" Sexp.pp_mach ([%sexp_of: Cli.Descendants_opts.t] opts) ) ;
   Logs.info (fun m -> m "reading nodes dmp") ;
   let children_of = read_nodes_dmp opts.nodes_dmp in
   Logs.info (fun m -> m "reading query ids") ;

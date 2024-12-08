@@ -15,7 +15,7 @@ let get_tax_ids_for_rank target_rank ~in':nodes_dmp =
 let sample : 'a list -> size:int -> 'a list =
  fun items ~size -> List.take (List.permute items) size
 
-let run : Opts.Sample_opts.t -> unit =
+let run : Cli.Sample_opts.t -> unit =
  fun opts ->
   Logging.set_up_logging opts.log_level ;
   Logs.info (fun m -> m "reading nodes dmp") ;

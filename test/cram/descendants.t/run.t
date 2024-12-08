@@ -59,14 +59,7 @@ And it should NOT have the ID that is NOT present in the nodes file.
 COMPARE BOTH
 ============
 
-  $ wc -l result*.tsv
-    4868 result_basic.tsv
-    9622 result_full.tsv
-   14490 total
-
-
-Gives the expected output (checked against XXXX.X.X) TODO add back in when you cut a new release
-
-$ gunzip -c expected_output.tsv.gz | sort > expected_output.tsv
-$ taxi descendants nodes.dmp ids.txt | sort > result.tsv
-$ diff expected_output.tsv result.tsv
+  $ awk 'END {print NR}' result_basic.tsv
+  4868
+  $ awk 'END {print NR}' result_full.tsv
+  9622

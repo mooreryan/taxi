@@ -76,7 +76,7 @@ let nodes_dmp_fields_generator =
 let nodes_dmp_line_generator =
   Quickcheck.Let_syntax.(
     let%map fields = nodes_dmp_fields_generator in
-    String.concat (fields @ ["\t|\n"]) ~sep:"\t|\t" )
+    String.concat fields ~sep:"\t|\t" ^ "\t|\n" )
 
 let nodes_dmp_lines_generator num_lines =
   Quickcheck.Let_syntax.(

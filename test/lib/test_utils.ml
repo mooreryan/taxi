@@ -2,10 +2,13 @@ open! Core
 
 let dmp_sep = Re.seq [Re.char '\t'; Re.char '|'; Re.char '\t'] |> Re.compile
 
-let split_dmp_fields_regex s =
+let chop_end_delimiter s =
   s
-  |> String.chop_suffix_exn ~suffix:"\t|\n"
-  |> Re.split_delim dmp_sep |> Array.of_list
+  |> String.chop_suffix_if_exists ~suffix:"\n"
+  |> String.chop_suffix_if_exists ~suffix:"\t|"
+
+let split_dmp_fields_regex s =
+  s |> chop_end_delimiter |> Re.split_delim dmp_sep |> Array.of_list
 
 let%test_unit "empty fields in the middle" =
   let dmp_line = "a\t|\t\t|\tc\t|\n" in
@@ -90,8 +93,39 @@ let%expect_test "end of record delim in the middle gives an error" =
       \n"))
     |}]
 
+let%expect_test "just the end delimiter is okay" =
+  let dmp_line = "\t|\n" in
+  let result = Array.create "" ~len:1 in
+  let result =
+    Or_error.try_with (fun () ->
+        Taxi_lib.Utils.split_dmp_fields dmp_line ~into:result )
+  in
+  result |> [%sexp_of: unit Or_error.t] |> print_s ;
+  [%expect {| (Ok ()) |}]
+
+let%expect_test "just the truncated end delimiter is okay" =
+  let dmp_line = "\t|" in
+  let result = Array.create "" ~len:1 in
+  let result =
+    Or_error.try_with (fun () ->
+        Taxi_lib.Utils.split_dmp_fields dmp_line ~into:result )
+  in
+  result |> [%sexp_of: unit Or_error.t] |> print_s ;
+  [%expect {| (Ok ()) |}]
+
 let%test_unit "split_dmp_fields matches regex splitting oracle" =
   Quickcheck.test ~sexp_of:String.sexp_of_t Generators.nodes_dmp_line_generator
+    ~f:(fun dmp_line ->
+      let expected = split_dmp_fields_regex dmp_line in
+      let actual = Array.create "" ~len:(Array.length expected) in
+      Taxi_lib.Utils.split_dmp_fields dmp_line ~into:actual ;
+      [%test_result: string array] actual ~expect:expected )
+    ~examples:["a\t|\t\t|\tc\t|\n"; "\t|\t\t|\n"; "\t|\t\t|\t\t|\n"]
+
+let%test_unit
+    "split_dmp_fields matches regex splitting oracle (unspecified field count)"
+    =
+  Quickcheck.test ~sexp_of:String.sexp_of_t Generators.any_dmp_line_generator
     ~f:(fun dmp_line ->
       let expected = split_dmp_fields_regex dmp_line in
       let actual = Array.create "" ~len:(Array.length expected) in

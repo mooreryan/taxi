@@ -75,8 +75,22 @@ let nodes_dmp_fields_generator =
 
 let nodes_dmp_line_generator =
   Quickcheck.Let_syntax.(
-    let%map fields = nodes_dmp_fields_generator in
-    String.concat fields ~sep:"\t|\t" ^ "\t|\n" )
+    let%bind fields = nodes_dmp_fields_generator in
+    (* Sometimes we want to end the line in ["\t|"] because that effectively
+       functions as an alternate ending delimiter. *)
+    let%map end_delimiter =
+      Base_quickcheck.Generator.of_list ["\t|\n"; "\t|"]
+    in
+    String.concat fields ~sep:"\t|\t" ^ end_delimiter )
+
+(* This generates dmp-like lines of unspecified lengths. *)
+let any_dmp_line_generator =
+  Quickcheck.Let_syntax.(
+    let%bind fields = Quickcheck.Generator.list generic_field_generator in
+    let%map end_delimiter =
+      Base_quickcheck.Generator.of_list ["\t|\n"; "\t|"]
+    in
+    String.concat fields ~sep:"\t|\t" ^ end_delimiter )
 
 let nodes_dmp_lines_generator num_lines =
   Quickcheck.Let_syntax.(

@@ -55,9 +55,9 @@ let tax_id_generator =
 let generic_field_generator =
   String.quickcheck_generator
   |> Quickcheck.Generator.filter ~f:(fun s ->
-         not (String.is_substring s ~substring:"\t|\t") )
+      not (String.is_substring s ~substring:"\t|\t") )
   |> Quickcheck.Generator.filter ~f:(fun s ->
-         not (String.is_substring s ~substring:"\t|\n") )
+      not (String.is_substring s ~substring:"\t|\n") )
 
 let nodes_dmp_fields_generator =
   (* nodes.dmp has 13 fields *)

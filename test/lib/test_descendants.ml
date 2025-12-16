@@ -6,9 +6,9 @@ let line_gen ?(num_fields = 13) () =
   let field_gen =
     String.quickcheck_generator
     |> Quickcheck.Generator.filter ~f:(fun s ->
-           not (String.is_substring s ~substring:"\t|\t") )
+        not (String.is_substring s ~substring:"\t|\t") )
     |> Quickcheck.Generator.filter ~f:(fun s ->
-           not (String.is_substring s ~substring:"\t|\n") )
+        not (String.is_substring s ~substring:"\t|\n") )
   in
   let id_fields_gen =
     Quickcheck.Generator.list_with_length 2
@@ -26,8 +26,9 @@ let line_gen ?(num_fields = 13) () =
   in
   line_gen
 
-let%test "split_fields matches the first two fields of Re.split_delim when \
-          line is valid" =
+let%test
+    "split_fields matches the first two fields of Re.split_delim when line is \
+     valid" =
   let sep = Re.seq [Re.char '\t'; Re.char '|'; Re.char '\t'] |> Re.compile in
   let split s = Re.split_delim sep s in
   Quickcheck.test ~sexp_of:String.sexp_of_t (line_gen ()) ~f:(fun line ->

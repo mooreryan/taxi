@@ -66,6 +66,15 @@ module Filter_opts = struct
   [@@deriving sexp_of]
 end
 
+module Paths_opts = struct
+  type t =
+    { nodes_dmp: string
+    ; names_dmp: string
+    ; taxids: string
+    ; log_level: Logs.level option }
+  [@@deriving sexp_of]
+end
+
 module Sample_opts = struct
   type t =
     { nodes_dmp: string
@@ -78,6 +87,7 @@ end
 type t =
   | Descendants_opts of Descendants_opts.t
   | Filter_opts of Filter_opts.t
+  | Paths_opts of Paths_opts.t
   | Sample_opts of Sample_opts.t
 [@@deriving sexp_of]
 
@@ -220,6 +230,42 @@ let filter =
   in
   Cmd.v info term
 
+let paths =
+  let info =
+    let doc = "get full taxonomy paths for a list of taxids" in
+    let man =
+      [ `S Manpage.s_description
+      ; `P "Given a list of taxids, return the full taxonomy path for each one."
+      ]
+      @ common_docs_sections
+    in
+    Cmd.info "paths" ~version:Version.version ~doc ~man ~exits:[]
+  in
+  let term =
+    Term.Syntax.(
+      let+ nodes_dmp =
+        let doc = "Path to NCBI Taxonomy nodes.dmp file" in
+        Arg.(
+          required
+          & pos 0 (some non_dir_file) None
+          & info [] ~docv:"NODES_DMP" ~doc )
+      and+ names_dmp =
+        let doc = "Path to NCBI Taxonomy names.dmp file" in
+        Arg.(
+          required
+          & pos 1 (some non_dir_file) None
+          & info [] ~docv:"NAMES_DMP" ~doc )
+      and+ taxids =
+        let doc = "Path to taxonomy IDs file" in
+        Arg.(
+          required
+          & pos 2 (some non_dir_file) None
+          & info [] ~docv:"TAXIDS" ~doc )
+      and+ log_level = verbose in
+      Paths_opts {nodes_dmp; names_dmp; taxids; log_level} )
+  in
+  Cmd.v info term
+
 let sample =
   let info =
     let doc = "todo" in
@@ -245,7 +291,7 @@ let sample =
   in
   Cmd.v info term
 
-let subcommands = [descendants; filter; sample]
+let subcommands = [descendants; filter; paths; sample]
 
 let cmd_group =
   let info =
